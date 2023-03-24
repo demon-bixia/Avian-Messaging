@@ -1,0 +1,64 @@
+version: "3"
+
+services:
+  # vue service
+  client:
+    # build the container from this image
+    build: ./client
+    # execute this command to start this service
+    command: bash -c "yarn run dev"
+    # bind this directory with /app/client in container
+    volumes:
+      - ./client:/app/client
+      - /app/client/node_modules
+    # bind port 5173 in local machine with port 5173 in container
+    ports:
+      - 5173:5173
+    # don't run this service before server
+    #depends_on:
+    #  - server
+
+  # express service
+  server:
+    # build the image using the Dockerfile
+    build: ./server
+    # execute this command to start this service
+    command: npm run dev
+    # bind this directory with /app/server in container
+    volumes:
+      - ./server:/app/server
+      - /app/server/node_modules
+    # bind port 3000 in local machine with port 3000 in container
+    ports:
+      - 3000:3000
+    # don't run this service before mongo
+    depends_on:
+      - db
+      - cache
+
+  # mongodb service
+  db:
+    # build the container from this image
+    image: mongo
+    # bind port 27017 in the local machine to port 27017 in the container
+    ports:
+      - 27017:27017
+    # presist mongodb data in the /data/db directory in container
+    volumes:
+      - mongo-data:/data/db
+    
+  # redis service
+  cache:
+    # build the container from this image
+    image: redis
+    # bind port 6379 in the local machine to port 6379 in the container
+    ports:
+      - 6379:6379
+    # presist redis data in the /data/cache directory in container
+    volumes:
+      - redis-data:/data/cache
+
+# list all named volumes in here
+volumes:
+  mongo-data:
+  redis-data:
